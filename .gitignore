@@ -1,0 +1,10 @@
+.DS_Store
+Business/Properties
+Business/bin
+Business/obj
+Dto/Properties
+Dto/bin
+Dto/obj
+View/Properties
+View/bin
+View/obj
