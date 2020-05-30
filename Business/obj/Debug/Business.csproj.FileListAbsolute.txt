@@ -1,0 +1,14 @@
+C:\Projetos\NetListMod\Business\obj\Debug\Business.csprojResolveAssemblyReference.cache
+C:\Projetos\NetListMod\Business\bin\Debug\Business.dll
+C:\Projetos\NetListMod\Business\bin\Debug\Business.pdb
+C:\Projetos\NetListMod\Business\obj\Debug\Business.dll
+C:\Projetos\NetListMod\Business\obj\Debug\Business.pdb
+C:\Projetos\NetListMod\Business\bin\Debug\Dto.dll
+C:\Projetos\NetListMod\Business\bin\Debug\Dto.pdb
+D:\Thesis\FaultInj\tools\NetListMod\Business\bin\Debug\Business.dll
+D:\Thesis\FaultInj\tools\NetListMod\Business\bin\Debug\Business.pdb
+D:\Thesis\FaultInj\tools\NetListMod\Business\bin\Debug\Dto.dll
+D:\Thesis\FaultInj\tools\NetListMod\Business\bin\Debug\Dto.pdb
+D:\Thesis\FaultInj\tools\NetListMod\Business\obj\Debug\Business.csprojResolveAssemblyReference.cache
+D:\Thesis\FaultInj\tools\NetListMod\Business\obj\Debug\Business.dll
+D:\Thesis\FaultInj\tools\NetListMod\Business\obj\Debug\Business.pdb
