@@ -17,7 +17,6 @@ namespace Business
         private string path = "C:\\NetListmod\\analysis\\";
         private string outputpath = "C:\\NetListmod\\analysis\\output\\";
         private string srcpath = "C:\\NetListmod\\analysis\\src\\";
-        private string datespath = "C:\\NetListmod\\analysis\\date\\";
 
         Maintenance maintenance = new Maintenance();
         Analysis analysis = new Analysis();
@@ -25,11 +24,9 @@ namespace Business
         public string NetListMain()
         {
             //Limpar variável inicial
-            Mensage.my_msg = "";
            
             System.IO.Directory.CreateDirectory(outputpath);
             System.IO.Directory.CreateDirectory(srcpath);
-            System.IO.Directory.CreateDirectory(datespath);
             string[] files;
             string netlist = "dut"; //netlist name (Desing Under Test --> Target)
             string filename = "dut"; //top module name (Desing Under Test --> Target)
@@ -44,27 +41,29 @@ namespace Business
             if (files.Length < 2) //Changed 1 to 2 by  Alexandre Coelho 
             {
                 //Console.Write("generating modules from netlist..."); //generating modules from netlist
-                Mensage.my_msg = "generating modules from netlist... ";
                  
                 i = netfile.IndexOf("`timescale");
                 j = netfile.IndexOf("module ");
-                for (k = i; k < j; k++)
-                    timescale += netfile[k];
+                for (k = i; k < j; k++) timescale += netfile[k];
 
                 do
                 {
-                    i = netfile.IndexOf("module ");
-                    j = netfile.IndexOf("endmodule ");
-                    char[] currentmodule = new char[j];
-                    char[] currentmodule_n = new char[j - i];
-                    System.IO.StreamReader n_file = new System.IO.StreamReader(path + netlist + ".vm");
-                    n_file.ReadBlock(currentmodule, 0, j);
+                    inicio modulo = netfile.IndexOf("module ");
+                    fin modulo = netfile.IndexOf("endmodule ");
+                    char[] currentmodule = new char[fin del modulo];
+                    char[] currentmodule_modulo exacto = new char[fin del modulo - inicio modulo];
+                    System.IO.StreamReader n_file = new System.IO.StreamReader(
+                        path + netlist + ".vm");
+
+                    n_file.ReadBlock(currentmodule, 0, fin modulo);
                     n_file.Close();
 
-                    for (k = i; k < j; k++)
-                        currentmodule_n[k - i] = currentmodule[k];
+                    for (k = inicio del modulo; k < fin del modulo; k++)
+                        currentmodule_n[k - inicio del modulo] = currentmodule[k];
 
-                    temp = new string(currentmodule);
+                    // currentmodulo n = modulo de inicio a fin
+
+                    temp = new string(bloque file);
                     string currentmodule_s = new string(currentmodule_n);
                     netfile = netfile.Replace(temp, "");
                     i = netfile.IndexOf("endmodule ");
@@ -77,25 +76,21 @@ namespace Business
                     currentmodule_s += temp + "*/";
                     netfile = netfile.Replace(temp + "*/", "");
                     temp = "";
-                    System.IO.File.WriteAllText(srcpath + analysis.secondword(currentmodule_s) + ".v", timescale + currentmodule_s);
+                    System.IO.File.WriteAllText(
+                        srcpath +
+                        analysis.secondword(currentmodule_s) +
+                        ".v", timescale +
+                        currentmodule_s
+                    );
                     System.IO.File.WriteAllText(path + netlist + ".vm", netfile);
                     m++;
                 } while (netfile.IndexOf("endmodule ") >= 0);
                 //Console.WriteLine("Done!!!");
 
-                Mensage.my_msg = Mensage.my_msg + "Done!!!\r\n";
             }
             maintenance.deletefile(srcpath, "temp");
             analysis.injection_analysis(srcpath, filename, outputpath);
             //Console.WriteLine("Done!!!");
-
-            Mensage.my_msg = Mensage.my_msg + "Done!!!\r\n";
-
-            //Salvando o Log
-            WriteFile();
-            
-            //Enviando para a View
-            return Mensage.my_msg;
         }
 
         private void WriteFile()
@@ -109,9 +104,6 @@ namespace Business
 
             //Declaração do método StreamWriter passando o caminho e nome do arquivo que deve ser salvo
             StreamWriter writer = new StreamWriter(file);
-
-            //Writing in the file 
-            writer.Write(Mensage.my_msg);
 
             //Close the file
             writer.Close();

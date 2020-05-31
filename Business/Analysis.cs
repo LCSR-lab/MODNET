@@ -11,7 +11,6 @@ namespace Business
     {
         Logic logic = new Logic();
         Maintenance maintenance = new Maintenance();
-        Memory memory = new Memory();
 
         public int injection_analysis(string path, string filename, string outputpath)
         {
@@ -27,21 +26,16 @@ namespace Business
             string timescale = "";
 
             //Console.Write("reading netlist for " + filename + "...");
-            Mensage.my_msg = Mensage.my_msg + "reading netlist for " + filename + "...";
             
 
             System.IO.StreamReader net_file = new System.IO.StreamReader(path + filename + ".v");
             timescale = net_file.ReadLine();
             //Console.WriteLine("[Done]!!");
             //Console.Write("reading module name... ");
-            Mensage.my_msg = Mensage.my_msg + "[Done]!!\r\n";
-            Mensage.my_msg = Mensage.my_msg + "reading module name...";
 
             module_name = net_file.ReadLine();
             //Console.WriteLine("[Done]!!");
             //Console.Write("reading module ports... ");
-            Mensage.my_msg = Mensage.my_msg + "[Done]!!\r\n";
-            Mensage.my_msg = Mensage.my_msg + "reading module ports...";
 
             string file = net_file.ReadToEnd();
             i = 0;
@@ -54,8 +48,6 @@ namespace Business
             string module_ports = new string(listport);
             //Console.WriteLine("[Done]!!");
             //Console.Write("reading module port declarations... ");
-            Mensage.my_msg = Mensage.my_msg + "[Done]!!\r\n";
-            Mensage.my_msg = Mensage.my_msg + "reading module name...";
 
             i = j + 5;
             j = file.IndexOf("wire");
@@ -64,8 +56,6 @@ namespace Business
             string module_dec = new string(decport);
             //Console.WriteLine("[Done]!!");
             //Console.Write("reading module wires... ");
-            Mensage.my_msg = Mensage.my_msg + "[Done]!!\r\n";
-            Mensage.my_msg = Mensage.my_msg + "reading module wires...";
 
             i = j;
             j = file.LastIndexOf("wire ");
@@ -79,12 +69,10 @@ namespace Business
             net_file.ReadLine();
             module_wire += net_file.ReadLine() + "\n";
             //Console.WriteLine("[Done]!!");
-            Mensage.my_msg = Mensage.my_msg + "[Done]!!\r\n";
             // Console.WriteLine(module_wire); Texto do Alexandre
             new_file = net_file.ReadToEnd();
             net_file.Close();
             //Console.WriteLine("Analyzing submodules for " + filename + "... ");
-            Mensage.my_msg = Mensage.my_msg + "Analyzing submodules for " + filename + "... \r\n";
             System.IO.File.WriteAllText(path + filename + "1.txt", new_file);
             System.IO.StreamReader n_file = new System.IO.StreamReader(path + filename + "1.txt");
 
@@ -161,7 +149,6 @@ namespace Business
                 System.IO.File.WriteAllText(outputpath + filename + ".v", temp1);
             }
             //Console.WriteLine("[Done Analysis for " + filename + "]!!");
-            Mensage.my_msg = Mensage.my_msg + "[Done Analysis for " + filename + "]!!\r\n";
             return counter;
         }
 

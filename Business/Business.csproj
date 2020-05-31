@@ -42,8 +42,6 @@
     <Compile Include="Analysis.cs" />
     <Compile Include="Logic.cs" />
     <Compile Include="Maintenance.cs" />
-    <Compile Include="Memory.cs" />
-    <Compile Include="Mensage.cs" />
     <Compile Include="NetListModMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
