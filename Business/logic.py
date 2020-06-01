@@ -1,7 +1,4 @@
 class Logic(object):
-    """
-    This class is useful
-    """
     combinational = {
         "LUT4_L",
         "LUT5",
@@ -37,10 +34,15 @@ class Logic(object):
     }
 
     @classmethod
-    def is_combinational(cls, value):
-        """I dont know"""
-        return value in cls.combinational
+    def get_name_component(cls, line):
+        return line.split(' ')[2]
 
     @classmethod
-    def is_sequential(cls, value):
-        return value in cls.sequential
+    def is_combinational(cls, line):
+        name = cls.get_name_component(line)
+        return name in cls.combinational
+
+    @classmethod
+    def is_sequential(cls, line):
+        name = cls.get_name_compare(line)
+        return name in cls.sequential

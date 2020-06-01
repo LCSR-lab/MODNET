@@ -8,3 +8,5 @@ Dto/obj
 View/Properties
 View/bin
 View/obj
+__pycache__
+*.pyc
