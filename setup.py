@@ -1,6 +1,6 @@
 import sys
 from pip._internal.req import parse_requirements
-from setuptools import setup
+from setuptools import find_packages, setup
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 7)
@@ -23,5 +23,9 @@ install_reqs = parse_requirements(
 reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
+    name="mod-net",
+    version="2.0.0",
+    description="Make SET and SEU fault injections in hierarchical verilog netlists",
+    packages=find_packages(exclude=("tests",)),
     install_requires=reqs,
 )
