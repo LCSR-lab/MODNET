@@ -42,6 +42,5 @@ def main(verbose,netlist,top_module,mode,outdir):
     """
     if verbose:
         click.echo("We are in the verbose mode.")
-    ctx.obj = Analysis(netlist,outdir)
 if __name__ == "__main__":
     main()
