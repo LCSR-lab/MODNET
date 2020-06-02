@@ -16,16 +16,16 @@ install it on Python {}.{}.
 """.format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
-
-install_reqs = parse_requirements(
-    'requirements.txt', session='webaio'
-)
-reqs = [str(ir.req) for ir in install_reqs]
-
 setup(
     name="mod-net",
     version="2.0.0",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
-    packages=find_packages(exclude=("tests",)),
-    install_requires=reqs,
+    packages=find_packages(exclude=("tests",)),   
+    install_requires=[
+        'Click',
+    ],
+    entry_points='''
+        [console_scripts]
+        modnet=modnet.modnet:main
+    ''',
 )
