@@ -31,12 +31,15 @@ import modnet
 @click.option(
     '--mode', '-t', 
     default='synplify',  
-    type=click.Choice(['synplify', 'vivado', 'yosis']),
+    type=click.Choice(['synplify']),
     help='Mode defines the netlist origin synthesizer'
 )
 
 @click.pass_context
 def main(verbose,netlist,top_module,mode,outdir):
+    """
+    MODify NETlist: A tool for processing verilog netlists and inserting fault injections at RTL level.
+    """
     if verbose:
         click.echo("We are in the verbose mode.")
     ctx.obj = Analysis(netlist,outdir)
