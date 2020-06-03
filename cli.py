@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import click
-import modnet
+from modnet import analysis
 
 @click.group()
 @click.option(
@@ -42,5 +42,8 @@ def main(verbose,netlist,top_module,mode,outdir):
     """
     if verbose:
         click.echo("We are in the verbose mode.")
+
+    analysis.Analysis(netlist,outdir).run()
+    
 if __name__ == "__main__":
     main()

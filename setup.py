@@ -26,6 +26,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        modnet=modnet.modnet:main
+        modnet=cli:main
     ''',
 )
