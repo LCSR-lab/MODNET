@@ -44,5 +44,5 @@ class Logic(object):
 
     @classmethod
     def is_sequential(cls, line):
-        name = cls.get_name_compare(line)
+        name = cls.get_name_component(line)
         return name in cls.sequential
