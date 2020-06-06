@@ -3,7 +3,7 @@
 import click
 from modnet import analysis
 
-@click.group()
+@click.command()
 @click.option(
     '--verbose', '-v', 
     is_flag=True, 
@@ -29,13 +29,12 @@ from modnet import analysis
 )
 
 @click.option(
-    '--mode', '-t', 
+    '--mode', '-m', 
     default='synplify',  
     type=click.Choice(['synplify']),
     help='Mode defines the netlist origin synthesizer'
 )
 
-@click.pass_context
 def main(verbose,netlist,top_module,mode,outdir):
     """
     MODify NETlist: A tool for processing verilog netlists and inserting fault injections at RTL level.
@@ -43,7 +42,8 @@ def main(verbose,netlist,top_module,mode,outdir):
     if verbose:
         click.echo("We are in the verbose mode.")
 
-    analysis.Analysis(netlist,outdir).run()
+    a = analysis.Analysis(netlist,outdir,top_module)
+    a.run()
     
 if __name__ == "__main__":
     main()
