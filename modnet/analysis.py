@@ -9,7 +9,7 @@ class FileWithoutModules(Exception):
 
 class Analysis(object):
 
-    def __init__(self, path_file_source, path_output, errtype='SET'):
+    def __init__(self, path_file_source, path_output, top_module, errtype='SET'):
         if not(path_file_source and path_output):
             raise ValueError('The source and output cant be empty.')
         if not os.path.exists(path_file_source):
@@ -21,6 +21,7 @@ class Analysis(object):
             path.mkdir(parents=True, exist_ok=True)
         self.path_file_source = path_file_source
         self.path_output = path_output
+        self.top_module = top_module
         self.errtype = errtype
         self._set_and_create_source_path()
         self._set_and_create_output_path()
@@ -33,7 +34,7 @@ class Analysis(object):
     def _set_and_create_output_path(self):
         path = Path(self.path_output).joinpath('output')
         path.mkdir(parents=True, exist_ok=True)
-        self.output_path = path
+        self.path_output = path
 
     def _create_modules_files(self, modules):
         for module in modules:
@@ -64,6 +65,7 @@ class Analysis(object):
         if not modules:
             raise FileWithoutModules('Can find any module.')
         self._create_modules_files(modules)
+        return modules
 
     def _get_list_port(self, lines):
         list_port = []
@@ -104,7 +106,7 @@ class Analysis(object):
         file_path = self.src_path / filename
         with open(file_path, 'r') as v_file:
             file_content = v_file.readlines()
-
+        
         list_port = self._get_list_port(file_content)
         file_content = file_content[len(list_port):]
 
@@ -114,7 +116,7 @@ class Analysis(object):
         list_wire = self._get_list_wire(file_content)
         file_content = file_content[len(list_wire):]
         inj_str = ".inj(inj[{}]) ,\n"
-        inj_utt_str = " .inj(inj[{intial_value} : {final_value} ]),\n"
+        inj_utt_str = " .inj(inj[{initial_value} : {final_value} ]),\n"
         for line in file_content:
             if " (" in line:
                 if (
@@ -128,7 +130,7 @@ class Analysis(object):
 
                 elif self.errtype in ["SEU", "SET", "RAMB"]:
                     name = Logic.get_name_component(line)
-                    if self._src_file_exists(self, name):
+                    if self._src_file_exists(name):
                         mod_count = self.injection_analysis(name)
                         new_line = name + " " + name + "_utt (\n"
                         if mod_count != 0:
@@ -143,7 +145,8 @@ class Analysis(object):
                         counter += mod_count
             else:
                 analysis += line
-
+            
+        # import ipdb; ipdb.set_trace()
         content_output_file = ''
         if self.errtype in ["SEU", "SET"]:
             if counter != 0:
@@ -151,7 +154,7 @@ class Analysis(object):
                     list_port[0] +
                     "inj,\n"
                 )
-                for line in list_ports[1:]:
+                for line in list_port[1:]:
                     content_output_file += line
                 content_output_file += (
                     "\ninput [" +
@@ -177,6 +180,7 @@ class Analysis(object):
                 for line in list_wire:
                     content_output_file += line
                 content_output_file += analysis
+                print(content_output_file)
 
         elif self.errtype == "RAMB":
             if counter != 0:
@@ -209,4 +213,15 @@ class Analysis(object):
                 for line in list_wire:
                     content_output_file += line
                 content_output_file += analysis
+        output_path = self.path_output / filename
+        with open(output_path, 'w') as module_file:
+            module_file.write(content_output_file)
         return counter
+
+    def run(self):
+        modules = self.part_file()
+        
+        for module in modules:
+            name = module.split('\n')[1].split(' ')[1]
+            # print(name)
+            self.injection_analysis(name)
