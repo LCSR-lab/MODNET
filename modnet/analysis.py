@@ -1,6 +1,19 @@
 import os
 from pathlib import Path
-from .logic import Logic
+from .constants import (
+    Files,
+    Errors,
+    ModuleCst,
+    Templates,
+    ErrorTypes,
+)
+from .utils import (
+    get_name_component,
+    is_combinational,
+    is_sequential,
+)
+
+__all__ = ['Analysis']
 
 
 class FileWithoutModules(Exception):
@@ -9,219 +22,252 @@ class FileWithoutModules(Exception):
 
 class Analysis(object):
 
-    def __init__(self, path_file_source, path_output, top_module, errtype='SET'):
-        if not(path_file_source and path_output):
-            raise ValueError('The source and output cant be empty.')
-        if not os.path.exists(path_file_source):
-            raise ValueError('The file must exist in the location.')
-        if not os.path.isfile(path_file_source):
-            raise ValueError('The input must be a file.')
-        if not os.path.exists(path_output):
-            path = Path(path_output)
-            path.mkdir(parents=True, exist_ok=True)
+    def __init__(
+        self,
+        path_file_source: str,
+        output_path: str,
+        top_module: str,
+        errtype='SET'
+    ) -> None:
+        """
+        Validate and initiate class with instance attr.
+        """
+
+        self._validate_initial_params(
+            path_file_source,
+            output_path,
+        )
+
         self.path_file_source = path_file_source
-        self.path_output = path_output
+        self.output_path = output_path
         self.top_module = top_module
         self.errtype = errtype
-        self._set_and_create_source_path()
-        self._set_and_create_output_path()
 
-    def _set_and_create_source_path(self):
-        path = Path(self.path_output).joinpath('src')
+    def _validate_initial_params(self, path_file_source: str, output_path: str) -> None:
+        """
+        Validate if the params are corrects, if not raise a Exception.
+        """
+        if not(path_file_source and output_path):
+            raise ValueError(Errors.EMPTY_PARAMS)
+        if not os.path.exists(path_file_source):
+            raise ValueError(Errors.FILE_DOSNT_EXISTS)
+        if not os.path.isfile(path_file_source):
+            raise ValueError(Errors.IS_NOT_A_FILE)
+
+    def _create_path(self, new_path: str) -> Path:
+        """
+        Create a path and his parents.
+        """
+        path = Path(self.output_path).joinpath(new_path)
         path.mkdir(parents=True, exist_ok=True)
-        self.src_path = path
+        return path
 
-    def _set_and_create_output_path(self):
-        path = Path(self.path_output).joinpath('output')
-        path.mkdir(parents=True, exist_ok=True)
-        self.path_output = path
+    def _set_and_create_paths(self) -> None:
+        """
+        Create the paths necesaries to operate.
+        """
+        self.src_path = self._create_path('src')
+        self.result_path = self._create_path('output')
 
-    def _create_modules_files(self, modules):
+    def _create_file(self, path: Path, content: str) -> None:
+        with open(path, 'w') as new_file:
+            new_file.write(content)
+
+    def _create_modules_files(self, modules: list) -> None:
+        """
+        Create the files in the output src for the modules.
+        """
         for module in modules:
-            name = module.split('\n')[1].split(' ')[1] + '.v'
+            name = module.split('\n')[1].split(' ')[1] + Files.EXTENSION
             path_file = self.src_path / name
-            with open(path_file, 'w') as module_file:
-                module_file.write(module)
+            self._create_file(path_file, module)
 
-    def part_file(self):
+    def create_modules(self) -> list:
+        """
+        Parce the input file in modules and create the files for them.
+        """
         with open(self.path_file_source, 'r') as source_file:
             lines = source_file.readlines()
         is_module = False
         module = ''
         modules = []
         for line in lines:
-            if 'timescale' in line:
+            if ModuleCst.TIMESCALE in line:
                 timescale = line
-            elif 'endmodule ' in line:
+            elif ModuleCst.END in line:
                 module += line
                 modules.append(module)
                 module = ''
                 is_module = False
-            elif 'module' in line:
+            elif ModuleCst.INIT in line:
                 module += timescale + line
                 is_module = True
             elif is_module:
                 module += line
         if not modules:
-            raise FileWithoutModules('Can find any module.')
+            raise FileWithoutModules(Errors.FILE_WITH_NO_MODULES)
         self._create_modules_files(modules)
         return modules
 
-    def _get_list_port(self, lines):
+    def _get_list_port(self, lines: list) -> list:
+        """
+        Return a list with the lines with the port configuration.
+        """
         list_port = []
         next_line_break = False
         for line in lines:
             list_port.append(line)
-            if ')' in line:
+            if ModuleCst.PORT_END_LINE in line:
                 next_line_break = True
             elif next_line_break:
                 break
         return list_port
 
-    def _get_list_io(self, lines):
+    def _get_list_io(self, lines: list) -> list:
+        """
+        Return a list with the lines with the input and ouput configuration.
+        """
         list_dec = []
         for line in lines:
-            if 'wire' in line:
+            if ModuleCst.WIRE in line:
                 break
             list_dec.append(line)
         return list_dec
 
-    def _get_list_wire(self, lines):
+    def _get_list_wire(self, lines: list) -> list:
         list_wire = []
         for line in lines:
-            if 'wire' not in line:
+            if ModuleCst.WIRE not in line:
                 break
             list_wire.append(line)
         return list_wire
 
-    def _src_file_exists(self, name):
-        filename = name + '.v'
+    def _src_file_exists(self, name: str) -> bool:
+        """
+        Validate if the source file exists
+        """
+        filename = name + Files.EXTENSION
         file_path = self.src_path / filename
         return os.path.exists(file_path)
 
-    def injection_analysis(self, filename):
-        counter = 0
+    def _make_injections(self, file_content: list) -> tuple(int, str):
+        """
+        This method analyse the kind and the id of a injection.
+        """
+        injection_counter = 0
         analysis = ''
-        filename += '.v'
-        file_path = self.src_path / filename
-        with open(file_path, 'r') as v_file:
-            file_content = v_file.readlines()
-        
-        list_port = self._get_list_port(file_content)
-        file_content = file_content[len(list_port):]
-
-        list_io = self._get_list_io(file_content)
-        file_content = file_content[len(list_io):]
-
-        list_wire = self._get_list_wire(file_content)
-        file_content = file_content[len(list_wire):]
-        inj_str = ".inj(inj[{}]) ,\n"
-        inj_utt_str = " .inj(inj[{initial_value} : {final_value} ]),\n"
         for line in file_content:
-            if " (" in line:
+            if ModuleCst.COMPONENT_START in line:
                 if (
-                    Logic.is_combinational(line) and self.errtype == "SET" or
-                    Logic.is_sequential(line) and self.errtype == "SEU"
+                    is_combinational(line) and self.errtype == ErrorTypes.SET or
+                    is_sequential(line) and self.errtype == ErrorTypes.SEU
                 ):
-                    name = Logic.get_name_component(line)
-                    analysis += line.replace(name, name + "_mod")
-                    analysis += inj_str.format(counter)
-                    counter += 1
+                    name = get_name_component(line)
+                    analysis += line.replace(name, name + Files.MOD)
+                    analysis += Templates.INJ.format(injection_counter)
+                    injection_counter += 1
 
-                elif self.errtype in ["SEU", "SET", "RAMB"]:
-                    name = Logic.get_name_component(line)
+                elif self.errtype in [ErrorTypes.SEU, ErrorTypes.SET, ErrorTypes.RAMB]:
+                    name = get_name_component(line)
                     if self._src_file_exists(name):
-                        mod_count = self.injection_analysis(name)
-                        new_line = name + " " + name + "_utt (\n"
+                        mod_count = self.create_files_with_injections(name)
+                        new_line = Templates.UTT_COMPONENT.format(name, name)
                         if mod_count != 0:
-                            line_inj_utr = inj_utt_str.format(
-                                initial_value=counter + mod_count - 1,
-                                final_value=counter,
+                            line_inj_utr = Templates.INJ_UTT.format(
+                                initial_value=injection_counter + mod_count - 1,
+                                final_value=injection_counter,
                             )
-                            if self.errtype == "RAMB":
-                                line_inj_utr += ".data_mask(data_mask),\n.address(address),\n"
+                            if self.errtype == ErrorTypes.RAMB:
+                                line_inj_utr += Templates.RAMB_INTRC
                             new_line += line_inj_utr
                         analysis += new_line
-                        counter += mod_count
+                        injection_counter += mod_count
             else:
                 analysis += line
-            
-        # import ipdb; ipdb.set_trace()
-        content_output_file = ''
-        if self.errtype in ["SEU", "SET"]:
-            if counter != 0:
-                content_output_file += (
-                    list_port[0] +
-                    "inj,\n"
-                )
-                for line in list_port[1:]:
-                    content_output_file += line
-                content_output_file += (
-                    "\ninput [" +
-                    str(counter - 1) +
-                    ": 0] inj ;\n"
-                )
-                for line in list_io:
-                    content_output_file += line
-                for line in list_wire:
-                    content_output_file += line
+        return injection_counter, analysis
 
-                content_output_file += analysis
-            else:
-                content_output_file += (
-                    list_port[0] +
-                    "\n inj,\n"
-                )
-                for line in list_port[1:]:
-                    content_output_file += line
-                content_output_file += "\ninput inj ;\n"
-                for line in list_io:
-                    content_output_file += line
-                for line in list_wire:
-                    content_output_file += line
-                content_output_file += analysis
-                print(content_output_file)
+    def create_files_with_injections(self, filename: str) -> int:
+        """
+        Generate the files with injections in the result path.
+        This method can be recursive.
+        """
+        filename += Files.EXTENSION
+        file_input_path = self.src_path / filename
+        with open(file_input_path, 'r') as src_file:
+            file_content = src_file.readlines()
 
-        elif self.errtype == "RAMB":
-            if counter != 0:
-                content_output_file += (
-                    list_port[0] +
-                    "inj,\ndata_mask,\naddress,\n"
+        def _remove_lines(lines: list, lines_to_remove: list) -> list:
+            return lines[len(lines_to_remove):]
+
+        list_line_port = self._get_list_port(file_content)
+        # remove ports from original file
+        file_content = _remove_lines(file_content, list_line_port)
+
+        list_line_io = self._get_list_io(file_content)
+        # remove io from original file
+        file_content = _remove_lines(file_content, list_line_io)
+
+        list_line_wire = self._get_list_wire(file_content)
+        # remove wire from original file
+        file_content = _remove_lines(file_content, list_line_wire)
+
+        # the file only have the instructions lines
+        analysis, injection_counter = self._make_injections(file_content)
+
+        content_output_file = self._get_content_output_file(
+            list_line_port,
+            list_line_io,
+            list_line_wire,
+            injection_counter,
+            analysis,
+        )
+        self._create_file(
+            self.result_path / filename,
+            content_output_file
+        )
+        return injection_counter
+
+    def _get_content_output_file(
+        self,
+        list_port: list,
+        list_io: list,
+        list_wire: list,
+        injection_counter: int,
+        analysis: str,
+    ) -> str:
+        """
+        Generate the content for the component file with injections.
+        """
+        output = ""
+        if self.errtype in [ErrorTypes.SEU, ErrorTypes.SET, ErrorTypes.RAMB]:
+            output += Templates.INITIAL_LINE.format(list_port[0])
+
+            if self.errtype == ErrorTypes.RAMB:
+                output += Templates.INPUT_LINES_RAMB
+
+            for port_line in list_port[1:]:
+                output += port_line
+
+            if injection_counter != 0:
+                new_line = Templates.INPUT_ARRAY_INJ.format(
+                    first=injection_counter-1,
+                    second=0,
                 )
-                for line in list_port[1:]:
-                    content_output_file += line
-                content_output_file += (
-                    "\ninput [" +
-                    str(counter - 1) +
-                    ": 0] inj ;\ninput [35:0] data_mask;\ninput [8:0] address;\n"
-                )
-                for line in list_io:
-                    content_output_file += line
-                for line in list_wire:
-                    content_output_file += line
-                content_output_file += analysis
             else:
-                content_output_file += (
-                    list_port[0] +
-                    "inj,\ndata_mask,\naddress,\n"
-                )
-                for line in list_port[1:]:
-                    content_output_file += line
-                content_output_file += "\ninput inj ;\ninput [35:0] data_mask;\ninput [8:0] address;\n"
-                for line in list_io:
-                    content_output_file += line
-                for line in list_wire:
-                    content_output_file += line
-                content_output_file += analysis
-        output_path = self.path_output / filename
-        with open(output_path, 'w') as module_file:
-            module_file.write(content_output_file)
-        return counter
+                new_line = Templates.INPUT_INJ
+            output += new_line
+
+            if self.errtype == ErrorTypes.RAMB:
+                output += Templates.INPUT_LINES_ARRAY_RAMB
+
+            for line in list_io + list_wire:
+                output += line
+            output += analysis
+        return output
 
     def run(self):
-        modules = self.part_file()
-        
+        self._set_and_create_paths()
+        modules = self.create_modules()
         for module in modules:
             name = module.split('\n')[1].split(' ')[1]
-            # print(name)
-            self.injection_analysis(name)
+            self.create_files_with_injections(name)
