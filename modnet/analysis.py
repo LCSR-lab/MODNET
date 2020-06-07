@@ -2,9 +2,10 @@ import os
 from pathlib import Path
 from typing import Tuple
 
-from .module_parser import ModuleParser
 from .constants import Errors, ErrorTypes, Files, ModuleCst, Templates
-from .utils import create_file, get_name_component, is_combinational, is_sequential
+from .module_parser import ModuleParser
+from .utils import (create_file, get_name_component, is_combinational,
+                    is_sequential)
 
 __all__ = ['Analysis']
 

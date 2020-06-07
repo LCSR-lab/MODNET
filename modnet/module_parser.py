@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from .constants import Errors, Files, ModuleCst
-
 from .utils import create_file
 
 __all__ = ['ModuleParser']
@@ -64,4 +63,3 @@ class ModuleParser(object):
             raise FileWithoutModules(Errors.FILE_WITH_NO_MODULES)
         cls._create_modules_files(modules, output_path)
         return modules
-
