@@ -1,10 +1,17 @@
+from pathlib import Path
 from .constants import Logic
 
 __all__ = [
+    'create_file',
     'get_name_component',
     'is_combinational',
     'is_sequential',
 ]
+
+
+def create_file(path: Path, content: str) -> None:
+    with open(path, 'w') as new_file:
+        new_file.write(content)
 
 
 def get_name_component(line: str) -> str:

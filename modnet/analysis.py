@@ -2,14 +2,11 @@ import os
 from pathlib import Path
 from typing import Tuple
 
+from .module_parser import ModuleParser
 from .constants import Errors, ErrorTypes, Files, ModuleCst, Templates
-from .utils import get_name_component, is_combinational, is_sequential
+from .utils import create_file, get_name_component, is_combinational, is_sequential
 
 __all__ = ['Analysis']
-
-
-class FileWithoutModules(Exception):
-    pass
 
 
 class Analysis(object):
@@ -35,8 +32,8 @@ class Analysis(object):
             output_path,
         )
 
-        self.path_file_source = path_file_source
-        self.output_path = output_path
+        self.path_file_source = Path(path_file_source)
+        self.output_path = Path(output_path)
         self.top_module = top_module
         self.errtype = errtype
 
@@ -51,60 +48,16 @@ class Analysis(object):
         if not os.path.isfile(path_file_source):
             raise ValueError(Errors.IS_NOT_A_FILE)
 
-    def _create_path(self, new_path: str) -> Path:
-        """
-        Create a path and his parents.
-        """
-        path = Path(self.output_path).joinpath(new_path)
-        path.mkdir(parents=True, exist_ok=True)
-        return path
-
     def _set_and_create_paths(self) -> None:
         """
         Create the paths necesaries to operate.
         """
-        self.src_path = self._create_path('src')
-        self.result_path = self._create_path('output')
 
-    def _create_file(self, path: Path, content: str) -> None:
-        with open(path, 'w') as new_file:
-            new_file.write(content)
+        self.src_path = self.output_path.joinpath('src')
+        self.src_path.mkdir(parents=True, exist_ok=True)
 
-    def _create_modules_files(self, modules: list) -> None:
-        """
-        Create the files in the output src for the modules.
-        """
-        for module in modules:
-            name = self._get_module_name(module) + Files.EXTENSION
-            path_file = self.src_path / name
-            self._create_file(path_file, module)
-
-    def split_file_in_modules(self) -> list:
-        """
-        Parce the input file in modules and create the files for them.
-        """
-        with open(self.path_file_source, 'r') as source_file:
-            lines = source_file.readlines()
-        is_module = False
-        module = ''
-        modules = []
-        for line in lines:
-            if ModuleCst.TIMESCALE in line:
-                timescale = line
-            elif ModuleCst.END in line:
-                module += line
-                modules.append(module)
-                module = ''
-                is_module = False
-            elif ModuleCst.INIT in line:
-                module += timescale + line
-                is_module = True
-            elif is_module:
-                module += line
-        if not modules:
-            raise FileWithoutModules(Errors.FILE_WITH_NO_MODULES)
-        self._create_modules_files(modules)
-        return modules
+        self.result_path = self.output_path.joinpath('output')
+        self.result_path.mkdir(parents=True, exist_ok=True)
 
     def _remove_list_port(self, lines: list) -> Tuple[list, list]:
         """
@@ -213,7 +166,7 @@ class Analysis(object):
             injection_counter,
             analysis,
         )
-        self._create_file(
+        create_file(
             self.result_path / filename,
             content_output_file
         )
@@ -255,12 +208,6 @@ class Analysis(object):
             output += analysis
         return output
 
-    def _get_module_name(self, module: str) -> str:
-        """
-        Read the first line of a module and get the name.
-        """
-        return module.split('\n')[1].split(' ')[1]
-
     def run(self):
         """
         Execute all the methods to generate the files with injections from the input file.
@@ -268,7 +215,10 @@ class Analysis(object):
         In the src folder are the modules with out injectios, in the output folder are the modules with the injections.
         """
         self._set_and_create_paths()
-        modules = self.split_file_in_modules()
+        modules = ModuleParser.split_file_in_modules(
+            self.path_file_source,
+            self.src_path,
+        )
         for module in modules:
-            name = self._get_module_name(module)
+            name = ModuleParser.get_module_name(module)
             self.create_files_with_injections(name)
