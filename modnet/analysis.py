@@ -1,17 +1,9 @@
 import os
 from pathlib import Path
-from .constants import (
-    Files,
-    Errors,
-    ModuleCst,
-    Templates,
-    ErrorTypes,
-)
-from .utils import (
-    get_name_component,
-    is_combinational,
-    is_sequential,
-)
+from typing import Tuple
+
+from .constants import Errors, ErrorTypes, Files, ModuleCst, Templates
+from .utils import get_name_component, is_combinational, is_sequential
 
 __all__ = ['Analysis']
 
@@ -21,6 +13,11 @@ class FileWithoutModules(Exception):
 
 
 class Analysis(object):
+    """
+    This class has the methods to analyze an input file,
+    split it into files with their modules and
+    modify these files so that they have injections.
+    """
 
     def __init__(
         self,
@@ -78,11 +75,11 @@ class Analysis(object):
         Create the files in the output src for the modules.
         """
         for module in modules:
-            name = module.split('\n')[1].split(' ')[1] + Files.EXTENSION
+            name = self._get_module_name(module) + Files.EXTENSION
             path_file = self.src_path / name
             self._create_file(path_file, module)
 
-    def create_modules(self) -> list:
+    def split_file_in_modules(self) -> list:
         """
         Parce the input file in modules and create the files for them.
         """
@@ -150,7 +147,7 @@ class Analysis(object):
         file_path = self.src_path / filename
         return os.path.exists(file_path)
 
-    def _make_injections(self, file_content: list) -> tuple(int, str):
+    def _make_injections(self, file_content: list) -> Tuple[int, str]:
         """
         This method analyse the kind and the id of a injection.
         """
@@ -212,7 +209,7 @@ class Analysis(object):
         file_content = _remove_lines(file_content, list_line_wire)
 
         # the file only have the instructions lines
-        analysis, injection_counter = self._make_injections(file_content)
+        injection_counter, analysis = self._make_injections(file_content)
 
         content_output_file = self._get_content_output_file(
             list_line_port,
@@ -265,9 +262,20 @@ class Analysis(object):
             output += analysis
         return output
 
+    def _get_module_name(self, module: str) -> str:
+        """
+        Read the first line of a module and get the name.
+        """
+        return module.split('\n')[1].split(' ')[1]
+
     def run(self):
+        """
+        Execute all the methods to generate the files with injections from the input file.
+        Two groups of files will be generated, ones in {output_folder}/src/ and others in {output_folder}/output/
+        In the src folder are the modules with out injectios, in the output folder are the modules with the injections.
+        """
         self._set_and_create_paths()
-        modules = self.create_modules()
+        modules = self.split_file_in_modules()
         for module in modules:
-            name = module.split('\n')[1].split(' ')[1]
+            name = self._get_module_name(module)
             self.create_files_with_injections(name)

@@ -1,4 +1,5 @@
 import sys
+
 from pip._internal.req import parse_requirements
 from setuptools import find_packages, setup
 
