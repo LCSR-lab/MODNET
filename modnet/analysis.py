@@ -106,9 +106,8 @@ class Analysis(object):
         self._create_modules_files(modules)
         return modules
 
-    def _get_list_port(self, lines: list) -> list:
+    def _remove_list_port(self, lines: list) -> Tuple[list, list]:
         """
-        Return a list with the lines with the port configuration.
         """
         list_port = []
         next_line_break = False
@@ -118,26 +117,28 @@ class Analysis(object):
                 next_line_break = True
             elif next_line_break:
                 break
-        return list_port
 
-    def _get_list_io(self, lines: list) -> list:
+        return lines[len(list_port):], list_port
+
+    def _remove_list_io(self, lines: list) -> Tuple[list, list]:
         """
-        Return a list with the lines with the input and ouput configuration.
         """
         list_dec = []
         for line in lines:
             if ModuleCst.WIRE in line:
                 break
             list_dec.append(line)
-        return list_dec
+        return lines[len(list_dec):], list_dec
 
-    def _get_list_wire(self, lines: list) -> list:
+    def _remove_list_wire(self, lines: list) -> Tuple[list, list]:
+        """
+        """
         list_wire = []
         for line in lines:
             if ModuleCst.WIRE not in line:
                 break
             list_wire.append(line)
-        return list_wire
+        return lines[len(list_wire):], list_wire
 
     def _src_file_exists(self, name: str) -> bool:
         """
@@ -193,20 +194,14 @@ class Analysis(object):
         with open(file_input_path, 'r') as src_file:
             file_content = src_file.readlines()
 
-        def _remove_lines(lines: list, lines_to_remove: list) -> list:
-            return lines[len(lines_to_remove):]
-
-        list_line_port = self._get_list_port(file_content)
         # remove ports from original file
-        file_content = _remove_lines(file_content, list_line_port)
+        file_content, list_line_port = self._remove_list_port(file_content)
 
-        list_line_io = self._get_list_io(file_content)
         # remove io from original file
-        file_content = _remove_lines(file_content, list_line_io)
+        file_content, list_line_io = self._remove_list_io(file_content)
 
-        list_line_wire = self._get_list_wire(file_content)
         # remove wire from original file
-        file_content = _remove_lines(file_content, list_line_wire)
+        file_content, list_line_wire = self._remove_list_wire(file_content)
 
         # the file only have the instructions lines
         injection_counter, analysis = self._make_injections(file_content)
@@ -242,8 +237,7 @@ class Analysis(object):
             if self.errtype == ErrorTypes.RAMB:
                 output += Templates.INPUT_LINES_RAMB
 
-            for port_line in list_port[1:]:
-                output += port_line
+            output.join(list_port[1:])
 
             if injection_counter != 0:
                 new_line = Templates.INPUT_ARRAY_INJ.format(
@@ -257,8 +251,7 @@ class Analysis(object):
             if self.errtype == ErrorTypes.RAMB:
                 output += Templates.INPUT_LINES_ARRAY_RAMB
 
-            for line in list_io + list_wire:
-                output += line
+            output.join(list_io + list_wire)
             output += analysis
         return output
 
