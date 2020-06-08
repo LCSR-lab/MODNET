@@ -38,7 +38,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r modnet/requirements.txt
 
       - save_cache:
           paths:
@@ -50,7 +50,7 @@ jobs:
           command: |
             . venv/bin/activate
             pip install pytest==5.4.2 pytest-cov==2.8.1 coveralls==1.11.1
-            pytest --cov=tests --cov-report html -x
+            pytest --cov=modnet/modnet/tests --cov-report html -x
             COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN coveralls
 
       - store_artifacts:
@@ -74,7 +74,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r modnet/requirements.txt
             pip install setuptools wheel twine
             
       - save_cache:
