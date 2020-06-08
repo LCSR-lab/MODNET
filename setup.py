@@ -25,6 +25,6 @@ setup(
         'Click',
     ],
     entry_points={
-        'console_scripts': ['modnet=sarasa:main'],
+        'console_scripts': ['modnet=modnet.cli:main'],
     }
 )

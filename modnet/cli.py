@@ -2,7 +2,7 @@
 
 import click
 
-from modnet import analysis
+from .modnet import analysis
 
 
 @click.command()
