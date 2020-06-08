@@ -4,8 +4,12 @@ from typing import Tuple
 
 from .constants import Errors, ErrorTypes, Files, ModuleCst, Templates
 from .module_parser import ModuleParser
-from .utils import (create_file, get_name_component, is_combinational,
-                    is_sequential)
+from .utils import (
+    create_file,
+    get_name_component,
+    is_combinational,
+    is_sequential,
+)
 
 __all__ = ['Analysis']
 
@@ -59,6 +63,20 @@ class Analysis(object):
 
         self.result_path = self.output_path.joinpath('output')
         self.result_path.mkdir(parents=True, exist_ok=True)
+
+    def _remove_module_start(self, lines: list) -> Tuple[list, list]:
+        """
+        """
+        list_module_start = []
+        next_line_break = False
+        for line in lines:
+            if '(' in line:
+                next_line_break = True
+            elif next_line_break:
+                break
+            list_module_start.append(line)
+
+        return lines[len(list_module_start):], list_module_start
 
     def _remove_list_port(self, lines: list) -> Tuple[list, list]:
         """
@@ -123,7 +141,7 @@ class Analysis(object):
                     name = get_name_component(line)
                     if self._src_file_exists(name):
                         mod_count = self.create_files_with_injections(name)
-                        new_line = Templates.UTT_COMPONENT.format(name, name)
+                        line = Templates.UTT_COMPONENT.format(name, name)
                         if mod_count != 0:
                             line_inj_utr = Templates.INJ_UTT.format(
                                 initial_value=injection_counter + mod_count - 1,
@@ -131,9 +149,11 @@ class Analysis(object):
                             )
                             if self.errtype == ErrorTypes.RAMB:
                                 line_inj_utr += Templates.RAMB_INTRC
-                            new_line += line_inj_utr
-                        analysis += new_line
+                            line += line_inj_utr
                         injection_counter += mod_count
+                    analysis += line
+                else:
+                    analysis += line
             else:
                 analysis += line
         return injection_counter, analysis
@@ -147,6 +167,8 @@ class Analysis(object):
         file_input_path = self.src_path / filename
         with open(file_input_path, 'r') as src_file:
             file_content = src_file.readlines()
+
+        file_content, list_module_start = self._remove_module_start(file_content)
 
         # remove ports from original file
         file_content, list_line_port = self._remove_list_port(file_content)
@@ -164,6 +186,7 @@ class Analysis(object):
             list_line_port,
             list_line_io,
             list_line_wire,
+            list_module_start,
             injection_counter,
             analysis,
         )
@@ -178,20 +201,21 @@ class Analysis(object):
         list_port: list,
         list_io: list,
         list_wire: list,
+        list_module_start: list,
         injection_counter: int,
         analysis: str,
     ) -> str:
         """
         Generate the content for the component file with injections.
         """
-        output = ""
+        output = list_module_start[0]
         if self.errtype in [ErrorTypes.SEU, ErrorTypes.SET, ErrorTypes.RAMB]:
-            output += Templates.INITIAL_LINE.format(list_port[0])
+            output += Templates.INITIAL_LINE.format(list_module_start[1])
 
             if self.errtype == ErrorTypes.RAMB:
                 output += Templates.INPUT_LINES_RAMB
 
-            output.join(list_port[1:])
+            output += ''.join(list_port)
 
             if injection_counter != 0:
                 new_line = Templates.INPUT_ARRAY_INJ.format(
@@ -205,7 +229,7 @@ class Analysis(object):
             if self.errtype == ErrorTypes.RAMB:
                 output += Templates.INPUT_LINES_ARRAY_RAMB
 
-            output.join(list_io + list_wire)
+            output += ''.join(list_io + list_wire)
             output += analysis
         return output
 
