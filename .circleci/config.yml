@@ -67,7 +67,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "modnet/requirements.txt" }}
             - v1-dependencies-
       - run:
           name: install dependencies
@@ -80,7 +80,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum "modnet/requirements.txt" }}
 
       - run:
           name: init .pypirc
