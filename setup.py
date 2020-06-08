@@ -18,7 +18,7 @@ install it on Python {}.{}.
 
 setup(
     name="mod-net",
-    version="v2.0.0-beta2",
+    version="v2.0.0-beta3",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
