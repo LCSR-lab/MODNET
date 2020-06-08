@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
 import click
-from modnet import analysis
+
+from .modnet import analysis
+
 
 @click.command()
 @click.option(

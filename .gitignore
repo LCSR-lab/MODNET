@@ -12,3 +12,5 @@ __pycache__
 *.pyc
 dist
 mod_net.egg-info
+.coverage
+htmlcov/

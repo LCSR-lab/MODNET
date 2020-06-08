@@ -1,5 +1,5 @@
 import sys
-from pip._internal.req import parse_requirements
+
 from setuptools import find_packages, setup
 
 CURRENT_PYTHON = sys.version_info[:2]
@@ -20,12 +20,11 @@ setup(
     name="mod-net",
     version="v2.0.0-beta2",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
-    packages=find_packages(exclude=("tests",)),   
+    packages=find_packages(exclude=("tests",)),
     install_requires=[
         'Click',
     ],
-    entry_points='''
-        [console_scripts]
-        modnet=cli:main
-    ''',
+    entry_points={
+        'console_scripts': ['modnet=modnet.cli:main'],
+    }
 )
