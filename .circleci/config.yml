@@ -43,14 +43,14 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum "modnet/requirements.txt" }}
 
       - run:
           name: run tests
           command: |
             . venv/bin/activate
-            pip install pytest==5.4.2 pytest-cov==2.8.1 coveralls==1.11.1
-            pytest --cov=modnet/modnet/tests --cov-report html -x
+            cd modnet
+            sh run_tests.sh
             COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN coveralls
 
       - store_artifacts:
