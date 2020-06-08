@@ -2,7 +2,8 @@ version: '3.3'
 
 services:
   tests:
-    build: .
+    build: 
+      context: $PWD/modnet
     command: ./run_tests.sh
     volumes:
-      - $PWD:/modnet
+      - $PWD/modnet:/modnet
