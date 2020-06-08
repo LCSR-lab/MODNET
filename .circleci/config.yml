@@ -1,8 +1,8 @@
 version: 2.1
 workflows:
-  build_and_publish:
+  test-and-release:
     jobs:
-      - build:
+      - test:
           filters:
             branches:
               only: /.*/
@@ -10,14 +10,14 @@ workflows:
               only: /.*/
       - publish:
           requires:
-            - build
+            - test
           filters:
             tags:
               only: /.*/
             branches:
               ignore: /.*/
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/python:3.7
 
