@@ -18,11 +18,11 @@ install it on Python {}.{}.
 
 setup(
     name="mod-net",
-    version="v2.0.0-beta3",
+    version="v2.0.0-beta4",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        'Click',
+        'Click>=7.1.2',
     ],
     entry_points={
         'console_scripts': ['modnet=modnet.cli:main'],
