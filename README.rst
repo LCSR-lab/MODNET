@@ -83,7 +83,7 @@ These files are:
 * The inner output/ directory modified modules will be placed.
 * The inner src/ directory original modules will be placed.
 
-Develpment
+Development
 ----------
 In case you are looking to extend or improve this project, you'll first need to setup your development workflow. The project works with Docker and docker-compose. You can find information about `Install docker <https://docs.docker.com/install/>`_ and `Install docker compose <https://docs.docker.com/compose/install/>`_ in the official documentation.
 
