@@ -18,7 +18,7 @@ MODify NETlist: A tool for processing verilog netlists and inserting fault injec
    :alt: LUT transformation
    :figclass: align-center
 
-   LUT transformation
+                                    LUT transformation
 
 |
 
