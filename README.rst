@@ -7,7 +7,7 @@ MODify NETlist: A tool for processing verilog netlists and inserting fault injec
 
 
 .. image:: _doc/lut.png
-   :scale: 20 %
+   :scale: 20
 
    LUT transformation
 
