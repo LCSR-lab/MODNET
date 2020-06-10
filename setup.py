@@ -30,7 +30,7 @@ setup(
     long_description_content_type='text/x-rst',
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        'Click',
+        'Click==7.*',
     ],
     entry_points={
         'console_scripts': ['modnet=modnet.cli:main'],
