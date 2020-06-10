@@ -2,7 +2,7 @@ MODify NETlist: A tool for processing verilog netlists and inserting fault injec
 ===================================================================================================
 .. image:: https://img.shields.io/pypi/v/mod-net.svg
     :target: https://pypi.org/project/mod-net/
-.. image:: https://img.shields.io/pypi/pyversions/mod-net.svg
+.. image:: https://img.shields.io/badge/python-3.7-blue.svg
     :target: https://pypi.org/project/mod-net/
 .. image:: https://circleci.com/gh/LCSR-lab/MODNET.svg?style=shield
    :target: https://circleci.com/gh/LCSR-lab/MODNET
