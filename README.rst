@@ -6,8 +6,12 @@ MODify NETlist: A tool for processing verilog netlists and inserting fault injec
    :target: https://coveralls.io/github/LCSR-lab/MODNET?branch=master
 
 
-.. image:: _doc/lut.png
-   :scale: 20
+.. figure:: _doc/lut.png
+   :width: 200px
+   :align: center
+   :height: 100px
+   :alt: alternate text
+   :figclass: align-center
 
    LUT transformation
 
