@@ -22,7 +22,7 @@ setup(
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        'Click>=7.1.2',
+        'Click==7.*',
     ],
     entry_points={
         'console_scripts': ['modnet=modnet.cli:main'],
