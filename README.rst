@@ -6,6 +6,12 @@ MODify NETlist: A tool for processing verilog netlists and inserting fault injec
    :target: https://coveralls.io/github/LCSR-lab/MODNET?branch=master
 
 
+.. figure:: _doc/lut.png
+   :scale: 50 %
+   :alt: map to buried treasure
+
+   This is the caption of the figure (a simple paragraph).
+
 MODNET is a tool that takes the Netlist of a circuit which it will submit, making changes to the places that are considered sensitive, so that the fault injection possible. The HDL code of the circuit to be submitted is synthesized using the "Synplify Pro" synthesis tool. In this tool you choose for which type of technology you want to synthesize the HDL code, it generates the Netlist in Verilog of the device under test (DUT). The generated Netlist is put in the entry in the MODNET tool (Modify NETlist), developed to automate the process of modification of the Xilinx libraries. Some of the modified components are the FD (flip-flop D) and its different copies (FDC, FDE ... etc) and also the LUTs (Look-Up Table), logic gates and multiplexers are included. The exit MODNET is the modified Netlist with a large number of extra input signals used to inject the flaws into the logs and logic gates, in this way It is possible to prepare an RTL so that SEUs and SETs can be injected. In this sense the original internal architecture is not changed and is respected as it is.
 
 Main Features
@@ -33,9 +39,13 @@ cd into a directory where MODNET can find the Nestlist that will be modified wit
 
 .. code-block:: text
 
-    $ modnet --netlist path/to/netlist --top-module top_module --outdir path/to/save/output
+    $ modnet --netlist path/to/netlist.vm --top-module top_module --outdir path/to/save/output
 
-These 3 options are those required by the software to interpret the netlist correctly
+These 3 options are those required by the software to interpret the netlist correctly. This settings are:
+
+* `netlist`: The path where to find the netlist to make changes to (as of today, only hierarchical netlists from Synplify Pro are supported)
+* `top_module`: This is the module that acts as top for the hole system. Since MODNET interpretates the netlist recursively, it is necessary to indicate which module acts as the top module.
+* `outdir`: This is the path where to save the resulting modules with injections (defaults to path/to/netlist/output) 
 
 This will create two directories in your current directory. As an example my directory will be called `example`.
 
