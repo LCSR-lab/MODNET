@@ -16,10 +16,18 @@ install it on Python {}.{}.
 """.format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
+# read the contents of your README file
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     name="mod-net",
-    version="v2.0.0-beta3",
+    version="v2.0.0-alpha1",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
     packages=find_packages(exclude=("tests",)),
     install_requires=[
         'Click',
