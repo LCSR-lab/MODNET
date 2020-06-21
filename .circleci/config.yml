@@ -1,8 +1,8 @@
 version: 2.1
 workflows:
-  build_and_publish:
+  test-and-release:
     jobs:
-      - build:
+      - test:
           filters:
             branches:
               only: /.*/
@@ -10,14 +10,14 @@ workflows:
               only: /.*/
       - publish:
           requires:
-            - build
+            - test
           filters:
             tags:
               only: /.*/
             branches:
               ignore: /.*/
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/python:3.7
 
@@ -29,7 +29,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "modnet/requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -38,19 +38,19 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r modnet/requirements.txt
 
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum "modnet/requirements.txt" }}
 
       - run:
           name: run tests
           command: |
             . venv/bin/activate
-            pip install pytest==5.4.2 pytest-cov==2.8.1 coveralls==1.11.1
-            pytest --cov=modnet --cov-report html
+            cd modnet
+            sh run_tests.sh
             coverage report
             COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN coveralls
             
@@ -68,20 +68,20 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "modnet/requirements.txt" }}
             - v1-dependencies-
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r modnet/requirements.txt
             pip install setuptools wheel twine
             
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum "modnet/requirements.txt" }}
 
       - run:
           name: init .pypirc
