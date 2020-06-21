@@ -24,7 +24,7 @@ with open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name="mod-net",
-    version="v2.0.0-beta5",
+    version="v2.0.0-beta6",
     description="Make SET and SEU fault injections in hierarchical verilog netlists",
     long_description=long_description,
     long_description_content_type='text/x-rst',
